@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins(builder.Configuration.GetSection("AllowedHosts").Get<string>()!)
+                .AllowAnyOrigin() // For demo purposes, allow all origins
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -42,7 +42,13 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "HCI Home Api"
+        Title = "Patient Administration System API",
+        Description = "API to search patient visit information at hospitals",
+        Contact = new OpenApiContact
+        {
+            Name = "Health Care Informed",
+            Email = "vinny.lawlor@hci.care"
+        }
     });
 
     options.TagActionsBy(api =>
@@ -56,6 +62,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.DocInclusionPredicate((_, _) => true);
+    
+    // Enable XML comments for better documentation
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "PatientAdministrationSystem.API.xml"), true);
 });
 
 builder.Services.AddHealthChecks();
@@ -96,7 +105,16 @@ using (var serviceScope = app.Services.CreateScope())
             Id = new Guid("1ec2d3f7-8aa8-4bf5-91b8-045378919049"),
             FirstName = "Vinny",
             LastName = "Lawlor",
-            Email = "vinny.lawlor@hci.care"
+            Email = "vinny.lawlor@hci.care",
+            PatientHospitals = new List<PatientHospitalRelation>
+            {
+                new()
+                {
+                    PatientId = new Guid("1ec2d3f7-8aa8-4bf5-91b8-045378919049"),
+                    HospitalId = new Guid("ff0c022e-1aff-4ad8-2231-08db0378ac98"),
+                    VisitId = new Guid("b8b5182a-995c-4bce-bce0-6038be112b8b")
+                }
+            }
         });
 
     dbContext.Visits.Add(
@@ -105,14 +123,30 @@ using (var serviceScope = app.Services.CreateScope())
             Id = new Guid("a7a5182a-995c-4bce-bce0-6038be112b7b"),
             Date = new DateTime(2023, 08, 22)
         });
+    
+    dbContext.Visits.Add(
+        new VisitEntity
+        {
+            Id = new Guid("b8b5182a-995c-4bce-bce0-6038be112b8b"),
+            Date = new DateTime(2023, 09, 15)
+        });
 
 
     dbContext.SaveChanges();
 }
 
 
+// Enable Swagger in all environments for demo purposes
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Patient Administration System API v1");
+    c.RoutePrefix = "swagger"; // Swagger UI available at /swagger
+    c.DocumentTitle = "Patient Administration System API";
+    c.DefaultModelsExpandDepth(-1); // Hide schemas section by default
+    c.DisplayOperationId();
+    c.DisplayRequestDuration();
+});
 
 app.UseCors();
 

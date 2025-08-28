@@ -154,4 +154,4 @@ app.UseResponseCompression();
 
 app.MapControllers();
 
-app.Run();
+app.Run("http://localhost:5272");

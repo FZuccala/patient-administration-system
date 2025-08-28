@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:5001', // .NET API port
+  baseURL: 'http://localhost:5272', // .NET API port
   headers: {
     'Content-Type': 'application/json',
   },
